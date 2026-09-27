@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SwipeRewards DEMO</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: #0b0b10;
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+
+    header {
+      height: 64px;
+      padding: 0 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #0b0b10;
+      border-bottom: 1px solid #292936;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .logo {
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .balance {
+      color: #72e38c;
+      font-weight: bold;
+    }
+
+    main {
+      max-width: 900px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    .notice {
+      background: #191923;
+      border: 1px solid #343443;
+      padding: 14px;
+      border-radius: 14px;
+      margin-bottom: 20px;
+      color: #ccc;
+    }
+
+    .upload {
+      border: 2px dashed #555568;
+      border-radius: 16px;
+      padding: 25px;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .choose {
+      display: inline-block;
+      padding: 11px 18px;
+      background: white;
+      color: black;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .feed {
+      width: 100%;
+      max-width: 440px;
+      height: 650px;
+      margin: auto;
+      position: relative;
+    }
+
+    .card {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: #17171f;
+      border-radius: 22px;
+      overflow: hidden;
+      border: 1px solid #30303d;
+      box-shadow: 0 20px 60px rgba(0,0,0,.5);
+      user-select: none;
+      touch-action: none;
+    }
+
+    .card img {
+      width: 100%;
+      height: 60%;
+      object-fit: cover;
+      background: #282832;
+    }
+
+    .info {
+      padding: 14px;
+    }
+
+    .username {
+      font-weight: bold;
+      font-size: 18px;
+    }
+
+    .comment {
+      color: #ccc;
+      margin-top: 7px;
+    }
+
+    .stats {
+      color: #aaa;
+      margin-top: 12px;
+      font-size: 14px;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 10px;
+      padding: 0 14px 14px;
+    }
+
+    button {
+      flex: 1;
+      padding: 12px;
+      border: 0;
+      border-radius: 12px;
+      background: #292936;
+      color: white;
+      cursor: pointer;
+      font-size: 18px;
+    }
+
+    button:hover {
+      background: #393948;
+    }
+
+    .hint {
+      text-align: center;
+      color: #777;
+      margin-top: 15px;
+    }
+
+    .earned {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      background: #17171f;
+      border: 1px solid #383844;
+      padding: 13px 17px;
+      border-radius: 14px;
+      z-index: 20;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.8);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 100;
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .modal-box {
+      width: 100%;
+      max-width: 450px;
+      background: #181820;
+      border: 1px solid #3b3b48;
+      border-radius: 18px;
+      padding: 22px;
+    }
+
+    .warning {
+      background: #30221f;
+      border: 1px solid #67483e;
+      padding: 12px;
+      border-radius: 12px;
+      color: #ffd8ce;
+      margin-bottom: 15px;
+    }
+
+    .fake-input,
+    select {
+      width: 100%;
+      padding: 13px;
+      margin: 6px 0;
+      border-radius: 10px;
+      border: 1px solid #3b3b47;
+      background: #101017;
+      color: #777;
+    }
+
+    .close {
+      width: 100%;
+      margin-top: 12px;
+      background: white;
+      color: black;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <div class="logo">
+    💸 SwipeRewards <small style="color:#777">DEMO</small>
+  </div>
+
+  <div>
+    Balance:
+    <span class="balance">
+      $<span id="balance">0.00</span>
+    </span>
+  </div>
+</header>
+
+<main>
+
+  <div class="notice">
+    <b>DEMO:</b>
+    Acest website este o simulare și nu oferă bani reali.
+    Nu introduce date reale de card sau PayPal.
+  </div>
+
+  <div class="upload">
+
+    <p>Alege poze pentru feed:</p>
+
+    <label class="choose" for="images">
+      📷 Alege imagini
+    </label>
+
+    <input
+      id="images"
+      type="file"
+      accept="image/*"
+      multiple
+    >
+
+    <p id="fileNames" style="color:#888;"></p>
+
+  </div>
+
+  <div class="feed" id="feed"></div>
+
+  <div class="hint">
+    Glisează cardul stânga/dreapta ca pe TikTok
+  </div>
+
+</main>
+
+<div class="earned">
+  💰 +$<span id="lastEarned">0.00</span>
+</div>
+
+
+<!-- PAYOUT -->
+
+<div class="modal" id="payout">
+
+  <div class="modal-box">
+
+    <h2>💵 Retragere $100.00</h2>
+
+    <div class="warning">
+      <b>SIMULARE:</b>
+      Acesta nu este un sistem real de plată.
+      Nu introduce date reale.
+    </div>
+
+    <select disabled>
+      <option>PayPal — SIMULAT</option>
+      <option>Card — SIMULAT</option>
+    </select>
+
+    <input
+      class="fake-input"
+      placeholder="email@example.com — demo"
+      disabled
+    >
+
+    <input
+      class="fake-input"
+      placeholder="Număr card — demo"
+      disabled
+    >
+
+    <button class="close" onclick="closePayout()">
+      Închide
+    </button>
+
+  </div>
+
+</div>
+
+
+<script>
+
+let balance = 0;
+let postIndex = 0;
+
+
+/* POSTĂRI DEMO */
+
+const users = [
+  "gelutzu",
+  "luna",
+  "pixelfox",
+  "nova",
+  "alex",
+  "mira",
+  "shadow",
+  "coolboy"
+];
+
+const comments = [
+  "Ce tare! 🔥",
+  "Îmi place poza!",
+  "Foarte cool 😍",
+  "Nice!",
+  "Super!",
+  "WOW 🔥",
+  "Ce poză frumoasă!",
+  "😂😂",
+  "Perfect!"
+];
+
+const posts = [];
+
+
+/* POZE DEMO */
+
+for (let i = 0; i < 20; i++) {
+
+  posts.push({
+    image:
+      "https://picsum.photos/500/700?random=" + (i + 1),
+
+    user:
+      users[i % users.length],
+
+    likes:
+      100 + Math.floor(Math.random() * 900),
+
+    comments:
+      10 + Math.floor(Math.random() * 100),
+
+    saves:
+      5 + Math.floor(Math.random() * 80),
+
+    shares:
+      10 + Math.floor(Math.random() * 150)
+  });
+
+}
+
+
+/* AFIȘARE CARD */
+
+function renderPost() {
+
+  const feed = document.getElementById("feed");
+
+  feed.innerHTML = "";
+
+  const post =
+    posts[postIndex % posts.length];
+
+  const card =
+    document.createElement("div");
+
+  card.className = "card";
+
+  card.innerHTML = `
+
+    <img src="${post.image}">
+
+    <div class="info">
+
+      <div class="username">
+        @${post.user}
+      </div>
+
+      <div class="comment">
+        ${comments[
+          postIndex % comments.length
+        ]}
+      </div>
+
+      <div class="stats">
+
+        ❤️ ${post.likes}
+        &nbsp;&nbsp;
+
+        💬 ${post.comments}
+        &nbsp;&nbsp;
+
+        🔖 ${post.saves}
+        &nbsp;&nbsp;
+
+        ↗️ ${post.shares}
+
+      </div>
+
+    </div>
+
+    <div class="buttons">
+
+      <button id="skip">
+        ⏭️
+      </button>
+
+      <button id="like">
+        ❤️ +$0.17
+      </button>
+
+    </div>
+  `;
+
+
+  feed.appendChild(card);
+
+
+  document
+    .getElementById("skip")
+    .onclick = function() {
+
+      earnMoney(0.04);
+
+    };
+
+
+  document
+    .getElementById("like")
+    .onclick = function() {
+
+      earnMoney(0.17);
+
+    };
+
+
+  /* SWIPE */
+
+  let startX = 0;
+  let difference = 0;
+
+
+  card.addEventListener(
+    "pointerdown",
+    function(event) {
+
+      startX = event.clientX;
+
+      card.setPointerCapture(
+        event.pointerId
+      );
+
+    }
+  );
+
+
+  card.addEventListener(
+    "pointermove",
+    function(event) {
+
+      if (!startX) return;
+
+      difference =
+        event.clientX - startX;
+
+      card.style.transform =
+        `translateX(${difference}px)
+         rotate(${difference / 20}deg)`;
+
+    }
+  );
+
+
+  card.addEventListener(
+    "pointerup",
+    function() {
+
+      if (Math.abs(difference) > 80) {
+
+        earnMoney(0.10);
+
+      } else {
+
+        card.style.transform = "";
+
+      }
+
+      startX = 0;
+      difference = 0;
+
+    }
+  );
+
+}
+
+
+/* BANI SIMULAȚI */
+
+function earnMoney(amount) {
+
+  balance += amount;
+
+  if (balance > 100) {
+    balance = 100;
+  }
+
+  document
+    .getElementById("balance")
+    .textContent =
+      balance.toFixed(2);
+
+
+  document
+    .getElementById("lastEarned")
+    .textContent =
+      amount.toFixed(2);
+
+
+  postIndex++;
+
+  renderPost();
+
+
+  if (balance >= 100) {
+
+    document
+      .getElementById("payout")
+      .classList
+      .add("show");
+
+  }
+
+}
+
+
+/* ÎNCHIDE PAYOUT */
+
+function closePayout() {
+
+  document
+    .getElementById("payout")
+    .classList
+    .remove("show");
+
+}
+
+
+/* ÎNCĂRCARE POZE */
+
+document
+  .getElementById("images")
+  .addEventListener(
+    "change",
+    function(event) {
+
+      const files =
+        Array.from(event.target.files);
+
+
+      document
+        .getElementById("fileNames")
+        .textContent =
+          files
+            .map(file => file.name)
+            .join(", ");
+
+
+      files.forEach(
+        function(file) {
+
+          if (
+            !file.type.startsWith("image/")
+          ) {
+            return;
+          }
+
+
+          const imageURL =
+            URL.createObjectURL(file);
+
+
+          posts.unshift({
+
+            image: imageURL,
+
+            user: "tu",
+
+            likes:
+              Math.floor(
+                Math.random() * 500
+              ),
+
+            comments:
+              Math.floor(
+                Math.random() * 50
+              ),
+
+            saves:
+              Math.floor(
+                Math.random() * 50
+              ),
+
+            shares:
+              Math.floor(
+                Math.random() * 100
+              )
+
+          });
+
+        }
+      );
+
+
+      postIndex = 0;
+
+      renderPost();
+
+    }
+  );
+
+
+/* PORNEȘTE SITE-UL */
+
+renderPost();
+
+</script>
+
+</body>
+</html>
